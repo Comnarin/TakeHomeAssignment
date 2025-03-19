@@ -7,6 +7,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+func CalculateDiscount2(c *fiber.Ctx) error {
+	return c.SendString("Hello, World!")
+}
 func CalculateDiscount3(c *fiber.Ctx) error {
 	var req requests.Cart
 

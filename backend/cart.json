@@ -1,0 +1,83 @@
+{
+    "Products": [
+        {
+            "Product": {
+                "Id": 1,
+                "Name": "T-Shirt",
+                "Price": 100.0,
+                "Category": "Clothing"
+            },
+            "Quantity": 1
+        },
+        {
+            "Product": {
+                "Id": 2,
+                "Name": "Hat",
+                "Price": 250.0,
+                "Category": "Accessories"
+            },
+            "Quantity": 1
+        },
+        {
+            "Product": {
+                "Id": 3,
+                "Name": "Hoodie",
+                "Price": 700.0,
+                "Category": "Accessories"
+            },
+            "Quantity": 1
+        },
+        {
+            "Product": {
+                "Id": 4,
+                "Name": "Watch",
+                "Price": 850.0,
+                "Category": "Electronics"
+            },
+            "Quantity": 1
+        },
+        {
+            "Product": {
+                "Id": 5,
+                "Name": "Bag",
+                "Price": 640.0,
+                "Category": "Clothing"
+            },
+            "Quantity": 1
+        }
+    ],
+    "Discounts": [
+        {
+            "Id": 1,
+            "DiscountName": "FixedAmount",
+            "DiscountCategory": "Coupon",
+            "Amount": 50.0
+        },
+        {
+            "Id": 2,
+            "DiscountName": "Percentage",
+            "DiscountCategory": "Coupon",
+            "Amount": 10.0
+        },
+        {
+            "Id": 3,
+            "DiscountName": "PercentageByCategory",
+            "DiscountCategory": "OnTop",
+            "ProductCategory": "Clothing",
+            "Amount": 15.0
+        },
+        {
+            "Id": 4,
+            "DiscountName": "Point",
+            "DiscountCategory": "OnTop",
+            "Point": 68
+        },
+        {
+            "Id": 5,
+            "DiscountName": "Seasonal",
+            "DiscountCategory": "Seasonal",
+            "Amount": 30.0,
+            "Condition": 400.0
+        }
+    ]
+}

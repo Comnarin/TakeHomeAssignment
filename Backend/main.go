@@ -5,9 +5,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-
 func main() {
 	app := fiber.New()
-	app.Get("/",handlers.CalculateDiscount)
+	app.Get("/", handlers.CalculateDiscount)
 	app.Listen(":3000")
 }

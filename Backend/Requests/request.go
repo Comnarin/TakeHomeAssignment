@@ -1,7 +1,7 @@
 package requests
 
 import (
-	"calculateDiscount/Models"
+	"calculateDiscount/models"
 )
 
 type ProductReq struct {

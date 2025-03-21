@@ -5,7 +5,7 @@ type Discount struct {
 	DiscountName     string
 	DiscountCategory string
 	ProductCategory  *string
-	Amount           float64
+	Amount           *float64
 	Point            *int
 	Condition        *float64
 }

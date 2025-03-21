@@ -7,6 +7,6 @@ import (
 
 func main() {
 	app := fiber.New()
-	app.Get("/", handlers.CalculateDiscount)
+	app.Post("/", handlers.CalculateDiscount)
 	app.Listen(":3000")
 }

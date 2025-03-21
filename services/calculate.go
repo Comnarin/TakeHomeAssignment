@@ -20,7 +20,7 @@ func CalculatePercentageByCategory(cart requests.Cart, discount models.Discount,
 	for _, product := range cart.Products {
 		if product.Product.Category == *discount.ProductCategory {
 			productTotalPrice := product.Product.Price * float64(product.Quantity)
-			price -= productTotalPrice * (discount.Amount) / 100
+			price -= productTotalPrice * (*discount.Amount) / 100
 		}
 	}
 	return price
@@ -58,20 +58,15 @@ func ApplyDiscount(cart requests.Cart) float64 {
 	var seasonal *models.Discount
 
 	for _, discount := range cart.Discounts {
-		switch discount.DiscountCategory {
-		case "Coupon":
-			if discount.DiscountName == "FixedAmount" {
-				fixAmount = &discount
-			} else if discount.DiscountName == "Percentage" {
-				percentage = &discount
-			}
-		case "OnTop":
-			if discount.DiscountName == "PercentageByCategory" {
-				categoryPercentage = &discount
-			} else if discount.DiscountName == "Point" {
-				point = &discount
-			}
-
+		switch discount.DiscountName {
+		case "fixedAmount":
+			fixAmount = &discount
+		case "Percentage":
+			percentage = &discount
+		case "Point":
+			point = &discount
+		case "PercentageByCategory":
+			categoryPercentage = &discount
 		case "Seasonal":
 			seasonal = &discount
 		}
@@ -79,17 +74,17 @@ func ApplyDiscount(cart requests.Cart) float64 {
 
 	switch {
 	case fixAmount != nil && percentage != nil:
-		calFixAmount := CalculateFixedAmountDiscount(fixAmount.Amount, total)
-		calPercentage := CalculatePercentageDiscount(percentage.Amount, total)
+		calFixAmount := CalculateFixedAmountDiscount(*fixAmount.Amount, total)
+		calPercentage := CalculatePercentageDiscount(*percentage.Amount, total)
 		if calFixAmount < calPercentage {
 			total = calFixAmount
 		} else {
 			total = calPercentage
 		}
 	case fixAmount != nil:
-		total = CalculateFixedAmountDiscount(fixAmount.Amount, total)
+		total = CalculateFixedAmountDiscount(*fixAmount.Amount, total)
 	case percentage != nil:
-		total = CalculatePercentageDiscount(percentage.Amount, total)
+		total = CalculatePercentageDiscount(*percentage.Amount, total)
 	}
 
 	switch {
@@ -107,9 +102,8 @@ func ApplyDiscount(cart requests.Cart) float64 {
 		total = CalculatePercentageByCategory(cart, *categoryPercentage, total)
 	}
 
-
 	if seasonal != nil {
-		total = CalculateSpecialDiscount(total, *seasonal.Condition, seasonal.Amount)
+		total = CalculateSpecialDiscount(total, *seasonal.Condition, *seasonal.Amount)
 	}
 
 	if total < 0 {

@@ -9,11 +9,23 @@ import (
 
 func CalculateDiscount(c *fiber.Ctx) error {
 	var req requests.Cart
+
 	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   "Invalid input",
+			"message": err.Error(),
+		})
 	}
 
-	total := services.ApplyDiscount(req)
+	total, err := services.ApplyDiscount(req)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   "Invalid input",
+			"message": err.Error(),
+		})
+	}
 
-	return c.JSON(fiber.Map{"total": total})
+	return c.JSON(fiber.Map{
+		"Net Price": total,
+	})
 }

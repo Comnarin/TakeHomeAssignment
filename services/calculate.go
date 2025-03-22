@@ -3,19 +3,23 @@ package services
 import (
 	"calculateDiscount/models"
 	"calculateDiscount/requests"
+	"fmt"
 	"math"
+	"strings"
 )
 
 func CalculateFixedAmountDiscount(amount float64, price float64) float64 {
 	if price < amount {
 		return 0
 	}
+
 	return price - amount
 }
 
 func CalculatePercentageDiscount(amount float64, price float64) float64 {
 	return price - (price * amount / 100)
 }
+
 func CalculatePercentageByCategory(cart requests.Cart, discount models.Discount, price float64) float64 {
 	for _, product := range cart.Products {
 		if product.Product.Category == *discount.ProductCategory {
@@ -40,16 +44,39 @@ func CalculateSpecialDiscount(price float64, condition float64, discount float64
 	return price - (discountMultiplier * discount)
 }
 
-func CalculateTotalPrice(cart requests.Cart) float64 {
-	var total float64
-	for _, product := range cart.Products {
-		total += product.Product.Price * float64(product.Quantity)
+func UpdateCart(cart requests.Cart, discount models.Discount, total float64) {
+	switch strings.ToLower(discount.DiscountName) {
+	case "fixedamount":
+		for _, product := range cart.Products {
+			weight := product.Product.Price / total
+			product.Product.Price -= *discount.Amount * weight
+		}
+	case "percentage":
+		for _, product := range cart.Products {
+			product.Product.Price -= product.Product.Price * (*discount.Amount / 100)
+		}
+
 	}
-	return total
 }
 
-func ApplyDiscount(cart requests.Cart) float64 {
-	total := CalculateTotalPrice(cart)
+
+func ApplyDiscount(cart requests.Cart) (float64, error) {
+
+	if len(cart.Products) == 0 {
+		return 0, fmt.Errorf("cart must contain at least one item")
+	}
+
+	var total float64
+
+	for _, item := range cart.Products {
+		if item.Product.Price < 0 {
+			return 0, fmt.Errorf("item %s has an invalid price", item.Product.Name)
+		}
+		if item.Quantity < 0 {
+			return 0, fmt.Errorf("item %s has an invalid quantity", item.Product.Name)
+		}
+		total += item.Product.Price * float64(item.Quantity)
+	}
 
 	var fixAmount *models.Discount
 	var percentage *models.Discount
@@ -58,16 +85,32 @@ func ApplyDiscount(cart requests.Cart) float64 {
 	var seasonal *models.Discount
 
 	for _, discount := range cart.Discounts {
+
+		discount.DiscountName = strings.ToLower(discount.DiscountName)
+
+		if discount.Amount != nil && *discount.Amount < 0 {
+			return 0, fmt.Errorf("discount %s has an invalid amount", discount.DiscountName)
+		}
+		if discount.Point != nil && *discount.Point < 0 {
+			return 0, fmt.Errorf("discount %s has an invalid point", discount.DiscountName)
+		}
+		if discount.Condition != nil && *discount.Condition < 0 {
+			return 0, fmt.Errorf("discount %s has an invalid condition", discount.DiscountName)
+		}
+		if discount.DiscountName != "fixedamount" && discount.DiscountName != "percentage" && discount.DiscountName != "percentagebycategory" && discount.DiscountName != "point" && discount.DiscountName != "seasonal" {
+			return 0, fmt.Errorf("discount %s has an invalid discount name", discount.DiscountName)
+		}
+
 		switch discount.DiscountName {
-		case "fixedAmount":
+		case "fixedamount":
 			fixAmount = &discount
-		case "Percentage":
+		case "percentage":
 			percentage = &discount
-		case "Point":
+		case "point":
 			point = &discount
-		case "PercentageByCategory":
+		case "percentagebycategory":
 			categoryPercentage = &discount
-		case "Seasonal":
+		case "seasonal":
 			seasonal = &discount
 		}
 	}
@@ -77,13 +120,17 @@ func ApplyDiscount(cart requests.Cart) float64 {
 		calFixAmount := CalculateFixedAmountDiscount(*fixAmount.Amount, total)
 		calPercentage := CalculatePercentageDiscount(*percentage.Amount, total)
 		if calFixAmount < calPercentage {
+			UpdateCart(cart, *fixAmount, total)
 			total = calFixAmount
 		} else {
+			UpdateCart(cart, *percentage, total)
 			total = calPercentage
 		}
 	case fixAmount != nil:
+		UpdateCart(cart, *fixAmount, total)
 		total = CalculateFixedAmountDiscount(*fixAmount.Amount, total)
 	case percentage != nil:
+		UpdateCart(cart, *percentage, total)
 		total = CalculatePercentageDiscount(*percentage.Amount, total)
 	}
 
@@ -110,5 +157,5 @@ func ApplyDiscount(cart requests.Cart) float64 {
 		total = 0
 	}
 
-	return total
+	return total, nil
 }

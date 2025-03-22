@@ -1,7 +1,7 @@
 package main
 
 import (
-	services "calculateDiscount/Services"
+	services "calculateDiscount/services"
 	requests "calculateDiscount/requests"
 	"encoding/json"
 	"fmt"
@@ -30,7 +30,13 @@ func main() {
 		return
 	}
 
-	total := services.ApplyDiscount(req)
-	fmt.Println("Total Price = ", total)
+	total,err := services.ApplyDiscount(req)
+	if err != nil {
+		fmt.Println("Error applying discount:", err)
+		return
+	}
+	
+	fmt.Println("Net Price:", total)
+
 
 }
